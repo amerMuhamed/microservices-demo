@@ -1,0 +1,34 @@
+server:
+  port: 8096
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+spring:
+  application:
+    name: gateway-server
+
+  cloud:
+    gateway:
+      routes:
+        - id: ms1
+          uri: http://localhost:9091
+          predicates:
+            - Path=/ms1/**
+          filters:
+            - StripPrefix=1
+
+        - id: ms2
+          uri: http://localhost:9092
+          predicates:
+            - Path=/ms2/**
+          filters:
+            - StripPrefix=1
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.web: DEBUG
