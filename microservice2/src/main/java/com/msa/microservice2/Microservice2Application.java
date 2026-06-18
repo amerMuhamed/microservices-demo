@@ -1,5 +1,6 @@
 package com.msa.microservice2;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +19,8 @@ public class Microservice2Application {
     public RestTemplate restTemplate() {
         return new RestTemplate();
     }
-@RestController
+
+    @RestController
     class Ms2TestController {
 
         private final RestTemplate restTemplate;
@@ -28,9 +30,21 @@ public class Microservice2Application {
         }
 
         @GetMapping("/api/display")
+        @CircuitBreaker(
+                name = "microservice1",
+                fallbackMethod = "getDefaultMessage"
+        )
         public String display() {
-            String ms1Response = restTemplate.getForObject("http://localhost:9091/display", String.class);
+
+            String ms1Response =
+                    restTemplate.getForObject(
+                            "http://localhost:9091/display",
+                            String.class);
+
             return "Microservice 2 received: " + ms1Response;
         }
-    }
-}
+
+        public String getDefaultMessage(Exception ex) {
+            return "This a default message when Microservice 1 is unavailable.";
+        }
+    }}
