@@ -1,5 +1,7 @@
 package com.msa.gatewayserver.filter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -10,10 +12,16 @@ import reactor.core.publisher.Mono;
 @Component
 public class GatewayPreFilter implements GlobalFilter, Ordered {
 
+    private static final Logger log = LoggerFactory.getLogger(GatewayPreFilter.class);
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        System.out.println("Executing gateway pre-filter for "
+        log.info("Executing gateway pre-filter for "
                 + exchange.getRequest().getMethod() + " " + exchange.getRequest().getPath());
+        String header = exchange.getRequest().getHeaders().getFirst("auth");
+      if (null== header||header.isEmpty()) {
+          log.error("No headers found in the request");
+      }
         return chain.filter(exchange);
     }
 
